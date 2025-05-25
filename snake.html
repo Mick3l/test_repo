@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Змейка - Изучение английского</title>
+    <link rel="stylesheet" href="snake.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Змейка</h1>
+            <div class="score-container">
+                <div class="score">Счет: <span id="score">0</span></div>
+                <div class="best-score">Рекорд: <span id="best-score">0</span></div>
+            </div>
+        </header>
+
+        <div class="game-container">
+            <canvas id="game" width="300" height="300"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="up" class="control-btn">↑</button>
+            <div class="controls-row">
+                <button id="left" class="control-btn">←</button>
+                <button id="right" class="control-btn">→</button>
+            </div>
+            <button id="down" class="control-btn">↓</button>
+        </div>
+
+        <!-- Модальное окно с заданием -->
+        <div id="task-modal" class="modal">
+            <div class="modal-content">
+                <h2>Заполните пропуск</h2>
+                <p id="task-question"></p>
+                <input type="text" id="task-answer" placeholder="Введите ответ">
+                <button id="submit-answer">Проверить</button>
+                <p id="task-result"></p>
+            </div>
+        </div>
+
+        <!-- Модальное окно с окончанием игры -->
+        <div id="game-over-modal" class="modal">
+            <div class="modal-content">
+                <h2>Игра окончена!</h2>
+                <p id="final-score"></p>
+                <p id="new-record" class="hidden">Новый рекорд! 🏆</p>
+                <button id="play-again">Играть снова</button>
+                <button id="back-to-menu">В меню</button>
+            </div>
+        </div>
+
+        <footer>
+            <a href="index.html" class="back-button">← Вернуться в меню</a>
+        </footer>
+    </div>
+
+    <script src="snake.js"></script>
+</body>
+</html>
