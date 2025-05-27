@@ -1,4 +1,4 @@
-/* Базовые стили */
+
 * {
     margin: 0;
     padding: 0;
@@ -21,7 +21,7 @@ body {
     min-height: 100vh;
 }
 
-/* Заголовок */
+
 header {
     text-align: center;
     margin-bottom: 20px;
@@ -41,7 +41,7 @@ header h1 {
     margin-bottom: 10px;
 }
 
-/* Игровое поле */
+
 .game-container {
     display: flex;
     justify-content: center;
@@ -54,7 +54,7 @@ canvas {
     background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
 }
 
-/* Кнопки управления */
+
 .controls {
     display: flex;
     flex-direction: column;
@@ -89,7 +89,7 @@ canvas {
     opacity: 0.9;
 }
 
-/* Модальное окно */
+
 .modal {
     display: none;
     position: fixed;
@@ -175,7 +175,7 @@ canvas {
     margin: 10px 0;
 }
 
-/* Подвал */
+
 footer {
     margin-top: auto;
     text-align: center;
@@ -196,9 +196,9 @@ footer {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Адаптивность */
+
 @media (min-width: 768px) {
     .controls {
-        display: none; /* Скрываем на десктопах, используются стрелки клавиатуры */
+        display: none; 
     }
 }

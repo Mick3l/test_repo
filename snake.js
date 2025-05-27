@@ -1,10 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация Telegram Mini App
+    
+
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    // Получение элементов DOM
+    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
+    if (!user_id) {
+        alert("User not identified. Try launching from Telegram.");
+        return;
+    }
+    const API = "http://localhost:8000/api/";
+    
+
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreElement = document.getElementById('score');
@@ -20,13 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const playAgainButton = document.getElementById('play-again');
     const backToMenuButton = document.getElementById('back-to-menu');
 
-    // Кнопки управления
+    
+
     const upButton = document.getElementById('up');
     const leftButton = document.getElementById('left');
     const rightButton = document.getElementById('right');
     const downButton = document.getElementById('down');
 
-    // Задания
+    
+
     const tasks = [
         {q:"She ___ (to go) to school every day.", a:"goes"},
         {q:"They ___ (to eat) dinner at 7 PM yesterday.", a:"ate"},
@@ -35,10 +45,10 @@ document.addEventListener('DOMContentLoaded', function() {
         {q:"We ___ (to see) that movie already.", a:"have seen"}
     ];
 
-    // Параметры игры
     const gridSize = 10;
     const cellSize = canvas.width / gridSize;
-    let snake = [{x: 4, y: 4}]; // Начальное положение змейки
+    let snake = [{x: 4, y: 4}];
+
     let direction = 'right';
     let nextDirection = 'right';
     let food = [];
@@ -46,31 +56,33 @@ document.addEventListener('DOMContentLoaded', function() {
     let bestScore = 0;
     let gameInterval;
     let isPaused = false;
-    let gameSpeed = 300; // Миллисекунды между обновлениями
+    let gameSpeed = 300;
 
-    // Получение лучшего результата из Telegram
     function getBestScore() {
-        // В реальном приложении здесь будет запрос к серверу
-        // Для демонстрации используем localStorage
-        const savedBestScore = localStorage.getItem('snakeBestScore');
-        if (savedBestScore) {
-            bestScore = parseInt(savedBestScore);
+        fetch(API+"get_best_score/",{
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({user_id,game:'snake'})
+        }).then(r=>r.json()).then(data=>{
+            bestScore = data.score || 0;
             bestScoreElement.textContent = bestScore;
-        }
+        });
     }
 
-    // Обновление лучшего результата
     function updateBestScore() {
         if (score > bestScore) {
+            fetch(API+"set_best_score/",{
+                method:"POST",
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id,game:'snake',score})
+            });
             bestScore = score;
-            localStorage.setItem('snakeBestScore', bestScore);
             bestScoreElement.textContent = bestScore;
             return true;
         }
         return false;
     }
 
-    // Создание еды в случайных местах
     function createFood() {
         food = [];
         for (let i = 0; i < 5; i++) {
@@ -84,7 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     y: Math.floor(Math.random() * gridSize)
                 };
 
-                // Проверка на совпадение с змейкой
+                
+
                 for (let segment of snake) {
                     if (segment.x === newFood.x && segment.y === newFood.y) {
                         isOverlapping = true;
@@ -92,7 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                // Проверка на совпадение с другой едой
+                
+
                 for (let existingFood of food) {
                     if (existingFood.x === newFood.x && existingFood.y === newFood.y) {
                         isOverlapping = true;
@@ -105,21 +119,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Отрисовка игры
+    
+
     function draw() {
-        // Очистка холста
+        
+
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--tg-theme-secondary-bg-color') || '#f0f0f0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Отрисовка змейки
+        
+
         for (let i = 0; i < snake.length; i++) {
             const segment = snake[i];
 
-            // Голова змейки
+            
+
             if (i === 0) {
                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--tg-theme-button-color') || '#3390ec';
             }
-            // Тело змейки
+            
+
             else {
                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--tg-theme-link-color') || '#2481cc';
             }
@@ -132,8 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         }
 
-        // Отрисовка еды
-        ctx.fillStyle = '#e74c3c'; // Красный цвет для ягод
+        
+
+        ctx.fillStyle = '#e74c3c'; 
+
         for (let item of food) {
             ctx.beginPath();
             ctx.arc(
@@ -146,11 +167,13 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fill();
         }
 
-        // Отрисовка сетки
+        
+
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
         ctx.lineWidth = 1;
 
-        // Вертикальные линии
+        
+
         for (let i = 1; i < gridSize; i++) {
             ctx.beginPath();
             ctx.moveTo(i * cellSize, 0);
@@ -158,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.stroke();
         }
 
-        // Горизонтальные линии
+        
+
         for (let i = 1; i < gridSize; i++) {
             ctx.beginPath();
             ctx.moveTo(0, i * cellSize);
@@ -167,16 +191,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Обновление состояния игры
+    
+
     function update() {
         if (isPaused) return;
 
         direction = nextDirection;
 
-        // Создаем новую голову змейки
+        
+
         const head = {...snake[0]};
 
-        // Обновляем позицию головы в зависимости от направления
+        
+
         switch (direction) {
             case 'up':
                 head.y -= 1;
@@ -192,13 +219,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
 
-        // Проверка на столкновение со стеной
+        
+
         if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize) {
             gameOver();
             return;
         }
 
-        // Проверка на столкновение с самим собой
+        
+
         for (let i = 0; i < snake.length; i++) {
             if (snake[i].x === head.x && snake[i].y === head.y) {
                 gameOver();
@@ -206,10 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Добавляем новую голову
+        
+
         snake.unshift(head);
 
-        // Проверка на столкновение с едой
+        
+
         let foundFood = false;
         for (let i = 0; i < food.length; i++) {
             if (head.x === food[i].x && head.y === food[i].y) {
@@ -218,45 +249,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 scoreElement.textContent = score;
                 foundFood = true;
 
-                // Показываем задание
+                
+
                 showTask();
                 break;
             }
         }
 
-        // Если еды не найдено, удаляем хвост змейки
+        
+
         if (!foundFood) {
             snake.pop();
         }
 
-        // Проверка на окончание игры (все ягоды съедены)
+        
+
         if (food.length === 0) {
             gameOver(true);
             return;
         }
     }
 
-    // Показать задание
+    
+
     function showTask() {
         isPaused = true;
         clearInterval(gameInterval);
 
-        // Выбираем случайное задание
+        
+
         const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
         taskQuestion.textContent = randomTask.q;
         taskAnswer.value = '';
         taskResult.textContent = '';
         taskResult.className = '';
 
-        // Сохраняем правильный ответ в атрибуте
+        
+
         taskQuestion.dataset.answer = randomTask.a;
 
-        // Показываем модальное окно
+        
+
         taskModal.style.display = 'flex';
         taskAnswer.focus();
     }
 
-    // Проверка ответа
+    
+
     function checkAnswer() {
         const userAnswer = taskAnswer.value.trim().toLowerCase();
         const correctAnswer = taskQuestion.dataset.answer.toLowerCase();
@@ -265,11 +304,13 @@ document.addEventListener('DOMContentLoaded', function() {
             taskResult.textContent = 'Правильно!';
             taskResult.className = 'correct';
 
-            // Закрываем модальное окно через 1 секунду
+            
+
             setTimeout(function() {
                 taskModal.style.display = 'none';
                 isPaused = false;
-                // Возобновляем игру
+                
+
                 gameInterval = setInterval(gameLoop, gameSpeed);
             }, 1000);
         } else {
@@ -280,13 +321,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Окончание игры
+    
+
     function gameOver(completed = false) {
         clearInterval(gameInterval);
 
         finalScoreElement.textContent = `Ваш счет: ${score}`;
 
-        // Проверка на новый рекорд
+        
+
         if (updateBestScore()) {
             newRecordElement.classList.remove('hidden');
         } else {
@@ -296,13 +339,15 @@ document.addEventListener('DOMContentLoaded', function() {
         gameOverModal.style.display = 'flex';
     }
 
-    // Основной игровой цикл
+    
+
     function gameLoop() {
         update();
         draw();
     }
 
-    // Сброс игры
+    
+
     function resetGame() {
         snake = [{x: 4, y: 4}];
         direction = 'right';
@@ -318,9 +363,11 @@ document.addEventListener('DOMContentLoaded', function() {
         gameInterval = setInterval(gameLoop, gameSpeed);
     }
 
-    // Обработчики событий
+    
 
-    // Клавиатура (для компьютеров)
+
+    
+
     document.addEventListener('keydown', function(e) {
         switch (e.key) {
             case 'ArrowUp':
@@ -338,7 +385,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Кнопки управления (для мобильных)
+    
+
     upButton.addEventListener('click', function() {
         if (direction !== 'down') nextDirection = 'up';
     });
@@ -355,7 +403,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (direction !== 'left') nextDirection = 'right';
     });
 
-    // Мобильные события касания
+    
+
     upButton.addEventListener('touchstart', function(e) {
         e.preventDefault();
         if (direction !== 'down') nextDirection = 'up';
@@ -376,7 +425,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (direction !== 'left') nextDirection = 'right';
     });
 
-    // Проверка ответа
+    
+
     submitAnswer.addEventListener('click', checkAnswer);
 
     taskAnswer.addEventListener('keydown', function(e) {
@@ -385,14 +435,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Кнопки после окончания игры
+    
+
     playAgainButton.addEventListener('click', resetGame);
 
     backToMenuButton.addEventListener('click', function() {
         window.location.href = 'index.html';
     });
 
-    // Инициализация игры
+    
+
     getBestScore();
     createFood();
     draw();

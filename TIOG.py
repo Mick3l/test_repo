@@ -1,12 +1,66 @@
 import sqlite3
 import telebot
 from telebot import types
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Позволим фронту обращаться к этому API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+def get_conn():
+    return sqlite3.connect('game.db')
+
+
+@app.post("/api/set_best_score/")
+async def set_best_score(request: Request):
+    data = await request.json()
+    user_id = int(data['user_id'])
+    game = data['game']  # 'snake' или 'modal'
+    score = int(data['score'])
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    if game not in ('snake', 'modal'): return {"ok": False, "error": "wrong game"}
+    field = 'snake_best_score' if game == 'snake' else 'modal_best_score'
+    cursor.execute(f"SELECT {field} FROM users WHERE id=?", (user_id,))
+    row = cursor.fetchone()
+    if row is None:
+        conn.close()
+        return {"ok": False}
+    old_score = row[0] or 0
+    if score > old_score:
+        cursor.execute(f"UPDATE users SET {field}=? WHERE id=?", (score, user_id))
+        conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+@app.post("/api/get_best_score/")
+async def get_best_score(request: Request):
+    data = await request.json()
+    user_id = int(data['user_id'])
+    game = data['game']
+    conn = get_conn()
+    field = 'snake_best_score' if game == 'snake' else 'modal_best_score'
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT {field} FROM users WHERE id=?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return {"score": int(row[0]) if row and row[0] is not None else 0}
+
 
 API_TOKEN = "8194023558:AAHVlbIPSv2ExcB8ZBg4nCl3XYBB2U5zf4g"
 bot = telebot.TeleBot(API_TOKEN)
 
 
-# Подключение к БД
 def init_db():
     conn = sqlite3.connect('game.db')
     cursor = conn.cursor()
@@ -14,14 +68,14 @@ def init_db():
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
         username TEXT,
-        score INTEGER DEFAULT 0
+        snake_best_score INTEGER DEFAULT 0,
+        modal_best_score INTEGER DEFAULT 0
     )
     ''')
     conn.commit()
     conn.close()
 
 
-# Добавление пользователя в БД
 def add_user(user_id, username):
     conn = sqlite3.connect('game.db')
     cursor = conn.cursor()
@@ -32,11 +86,16 @@ def add_user(user_id, username):
     conn.close()
 
 
-# Получение топ-5 игроков
 def get_top_players():
     conn = sqlite3.connect('game.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT username, score FROM users ORDER BY score DESC LIMIT 5')
+    cursor.execute('''
+        SELECT
+            username,
+            (snake_best_score + modal_best_score) AS score
+        FROM
+            users
+        ORDER BY score DESC LIMIT 5''')
     top_players = cursor.fetchall()
     conn.close()
     return top_players
@@ -57,22 +116,21 @@ def show_rating(message):
 
     bot.send_message(message.chat.id, rating_text)
 
-# Обработчик команды /start и любых сообщений
+
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_id = message.from_user.id
     username = message.from_user.username or f"user_{user_id}"
 
-    # Добавляем пользователя в базу, если его нет
     add_user(user_id, username)
 
-    # Создаем клавиатуру с кнопками
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    # Кнопка для веб-приложения
-    web_app_button = types.KeyboardButton("🇬🇧 Английский", web_app=types.WebAppInfo(url="https://your-webapp-url.com"))
+    web_app_button = types.KeyboardButton(
+        "🇬🇧 Английский",
+        web_app=types.WebAppInfo(url="https://mick3l.github.io/test_repo/")
+    )
 
-    # Кнопка для рейтинга
     rating_button = types.KeyboardButton("🏆 Рейтинг")
 
     markup.add(web_app_button, rating_button)
@@ -80,6 +138,19 @@ def handle_message(message):
     bot.send_message(message.chat.id, "Привет! Выбери действие:", reply_markup=markup)
 
 
+import threading
+import uvicorn
+
+
+def run_telegram():
+    bot.polling(none_stop=True)
+
+
+def run_api():
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 if __name__ == "__main__":
     init_db()
-    bot.polling(none_stop=True)
+    threading.Thread(target=run_api).start()
+    run_telegram()
