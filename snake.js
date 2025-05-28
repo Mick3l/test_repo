@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (!user_id) {
-        alert("User ID not found. Please try again or contact support.");
-        return;
-    }
+//    if (!user_id) {
+//        alert("User ID not found. Please try again or contact support.");
+//        return;
+//    }
     const API = "http://localhost:8000/api/";
     
 

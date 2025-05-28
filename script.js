@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     applyTelegramTheme();
 
+    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
+    if (!user_id) {
+        alert("User not identified. Try launching from Telegram.");
+        return;
+    }
+
     
     const buttons = document.querySelectorAll('.game-button');
     buttons.forEach(button => {

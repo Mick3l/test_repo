@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
         {question: "You ______ go now.",                        correct: "may", options: ["can","may"]},
         {question: "______ you help me, please?",               correct: "can", options: ["can","may"]},
     ];
-    // --- Data end
 
     let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
     if (!user_id) {
