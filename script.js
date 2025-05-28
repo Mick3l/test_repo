@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.ready();
 
     
-    
+
 
     
     tg.expand();
@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     applyTelegramTheme();
 
-    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
+    const params = new URLSearchParams(window.location.search);
+    const user_id = params.get('user_id');
     if (!user_id) {
         alert("User not identified. Try launching from Telegram.");
         return;

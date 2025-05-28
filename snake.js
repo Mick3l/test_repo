@@ -5,30 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.ready();
     tg.expand();
 
-    // Получаем ID пользователя (несколько способов на выбор)
-    let user_id;
-
-    alert(tg.initData);
-    alert(tg.initDataUnsafe);
-
-    // Способ 1: через initDataUnsafe (рекомендуемый)
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        user_id = tg.initDataUnsafe.user.id;
-    }
-    // Способ 2: через initData (нужно парсить)
-    else if (tg.initData) {
-        const data = new URLSearchParams(tg.initData);
-        const userStr = data.get('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            user_id = user.id;
-        }
+    const user_id = params.get('user_id');
+    if (!user_id) {
+        alert("User not identified. Try launching from Telegram.");
+        return;
     }
 
-//    if (!user_id) {
-//        alert("User ID not found. Please try again or contact support.");
-//        return;
-//    }
     const API = "http://localhost:8000/api/";
     
 
