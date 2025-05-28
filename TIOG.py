@@ -126,14 +126,16 @@ def handle_message(message):
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
+    print(message.from_user.id)
+
     web_app_button = types.KeyboardButton(
         "🇬🇧 Английский",
-        web_app=types.WebAppInfo(url=f"https://mick3l.github.io/test_repo/?user_id={bot.user.id}")
+        web_app=types.WebAppInfo(url=f"https://mick3l.github.io/test_repo/?user_id={message.from_user.id}")
     )
 
     rating_button = types.KeyboardButton("🏆 Рейтинг")
 
-    markup.add(rating_button)
+    markup.add(web_app_button, rating_button)
 
     bot.send_message(message.chat.id, "Привет! Выбери действие:", reply_markup=markup)
 

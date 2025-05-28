@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.ready();
     tg.expand();
 
+    const params = new URLSearchParams(window.location.search);
     const user_id = params.get('user_id');
     if (!user_id) {
         alert("User not identified. Try launching from Telegram.");

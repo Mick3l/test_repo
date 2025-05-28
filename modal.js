@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
         {question: "______ you help me, please?",               correct: "can", options: ["can","may"]},
     ];
 
-    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
+    const params = new URLSearchParams(window.location.search);
+    const user_id = params.get('user_id');
     if (!user_id) {
         alert("User not identified. Try launching from Telegram.");
         return;
