@@ -5,10 +5,23 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.ready();
     tg.expand();
 
-    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
+    function getInitData() {
+        if (tg?.initData) return tg.initData;
+        let m = window.location.search.match(/[?&]initData=([^&]*)/);
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+    function getUserIdFromInitData(initData) {
+        if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user && Telegram.WebApp.initDataUnsafe.user.id)
+            return Telegram.WebApp.initDataUnsafe.user.id;
+        let m = initData.match(/"id": *(\d+)/);
+        return m ? Number(m[1]) : null;
+    }
+
+    const initData = getInitData();
+    const user_id = getUserIdFromInitData(initData);
     if (!user_id) {
-        alert("User not identified. Try launching from Telegram.");
-        return;
+        alert("User not identified. Please open from Telegram.");
+        throw 'no user';
     }
 
     const API = "http://localhost:8000/api/";
