@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Модальные глаголы - Английские игры</title>
-    <link rel="stylesheet" href="snake.css">
+    <link rel="stylesheet" href="modal.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -16,18 +16,18 @@
         </div>
     </header>
 
-    <div id="game-area" style="text-align:center;">
-        <div id="question-container" style="margin: 30px 0;">
+    <div id="game-area">
+        <div id="question-container">
             <span id="question-text"></span>
-            <span id="gap" style="display: inline-block; min-width:60px; border-bottom:2px dotted #3390ec; vertical-align:baseline;">&nbsp;</span>
-            <!-- There is NO <span id="question-end">! JavaScript adds the trailing text dynamically -->
+            <span id="gap" class="gap-area">&nbsp;</span>
+            <!-- script will insert <span id="question-end"></span> -->
         </div>
-        <div id="options" style="margin: 20px 0;display:flex;justify-content:center;gap:20px;"></div>
-        <div style="margin:10px;font-size:16px;">
+        <div id="options"></div>
+        <div style="margin:8px;font-size:16px;">
             <span id="timer"></span>
         </div>
         <div id="result-msg"></div>
-        <button id="next-btn" style="display:none;margin-top:20px;">Дальше</button>
+        <button id="next-btn" style="display:none;">Дальше</button>
     </div>
 
     <div id="game-over-modal" class="modal">
@@ -36,7 +36,7 @@
             <p id="final-score"></p>
             <p id="new-record" class="hidden">Новый рекорд! 🏆</p>
             <button id="play-again">Играть снова</button>
-            <button onclick="window.location='index.html'">В меню</button>
+            <button class="back-button" id="gameover-back-button">В меню</button>
         </div>
     </div>
 
