@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         throw 'no user';
     }
 
-    const API = "http://84.201.171.104:8000/api/";
+    const API = "https://threeinone.duckdns.org:8000/api/";
     
 
     const canvas = document.getElementById('game');
@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const newRecordElement = document.getElementById('new-record');
     const playAgainButton = document.getElementById('play-again');
     const backToMenuButton = document.getElementById('back-to-menu');
+    const gameOverBackToMenuButton = document.getElementById('game-over-back-to-menu');
 
     
 
@@ -454,6 +455,21 @@ document.addEventListener('DOMContentLoaded', function() {
     playAgainButton.addEventListener('click', resetGame);
 
     backToMenuButton.addEventListener('click', function() {
+        if (score > bestScore) {
+            fetch(API+"set_best_score/", {
+                method:"POST",
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id, game: 'snake', score})
+            }).then(r=>r.json()).then(()=>{
+                alert("Поздравляем! Новый рекорд сохранён!");
+                window.location.href = 'index.html';
+            });
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    gameOverBackToMenuButton.addEventListener('click', function() {
         window.location.href = 'index.html';
     });
 

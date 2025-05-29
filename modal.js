@@ -42,7 +42,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const finalScoreElem = document.getElementById('final-score');
     const newRecordElem = document.getElementById('new-record');
     const playAgainBtn = document.getElementById('play-again');
-    const API = "http://84.201.171.104:8000/api/";
+    const backToMenuButton = document.getElementById('back-to-menu');
+    const API = "https://threeinone.duckdns.org:8000/api/";
+
+    backToMenuButton.addEventListener('click', function() {
+        if (score > bestScore) {
+            fetch(API+"set_best_score/", {
+                method:"POST",
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id, game: 'modal', score})
+            }).then(r=>r.json()).then(()=>{
+                alert("Поздравляем! Новый рекорд сохранён!");
+                window.location.href = 'index.html';
+            });
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
 
     // ===== App state =====
     let score = 0, bestScore = 0, currentIndex = 0, shuffled = [], timeLeft = 10, timerInterval;
@@ -179,6 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updateBestScoreIfNeeded();
         gameOverModal.style.display='flex';
     }
+
     playAgainBtn.onclick = startGame;
 
     fetchBestScore(); startGame();
