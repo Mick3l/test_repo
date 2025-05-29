@@ -20,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
         throw 'no user';
     }
 
-    let selectedOptionBtn = null;
-
     let modalVerbsData = [
         {questionStart: "", questionEnd: "you see anything in the dark room?", correct: "can", options: ["can","may"]},
         {questionStart: "Kate ", questionEnd: "speak English.", correct: "can", options: ["can","may"]},
@@ -119,8 +117,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (gap.dataset.filled === "1") return;
             let val = e.dataTransfer.getData("text/plain");
             fillGap(val);
-            if (selectedOptionBtn) selectedOptionBtn.classList.remove('selected');
-            selectedOptionBtn = null;
         };
 
         optionsDiv.innerHTML = '';
@@ -131,26 +127,11 @@ document.addEventListener('DOMContentLoaded', function () {
             b.setAttribute('draggable', 'true');
             b.ondragstart = e => { e.dataTransfer.setData("text/plain", opt); };
             b.onclick = function (e) {
-                if (selectedOptionBtn === b) {
-                    b.classList.remove('selected');
-                    selectedOptionBtn = null;
-                } else {
-                    document.querySelectorAll('.option-btn.selected').forEach(el => el.classList.remove('selected'));
-                    b.classList.add('selected');
-                    selectedOptionBtn = b;
-                }
+                if (gap.dataset.filled === "1") return;
+                fillGap(opt);
             };
             optionsDiv.appendChild(b);
         });
-
-        gap.onclick = function () {
-            if (gap.dataset.filled === "1") return;
-            if (selectedOptionBtn) {
-                fillGap(selectedOptionBtn.textContent);
-                selectedOptionBtn.classList.remove('selected');
-                selectedOptionBtn = null;
-            }
-        };
 
         nextBtn.style.display = "none";
         resultMsg.textContent = '';
