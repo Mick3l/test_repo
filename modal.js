@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
         throw 'no user';
     }
 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+
     let modalVerbsData = [
         {questionStart: "", questionEnd: "you see anything in the dark room?", correct: "can", options: ["can","may"]},
         {questionStart: "Kate ", questionEnd: "speak English.", correct: "can", options: ["can","may"]},
@@ -120,12 +123,15 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         optionsDiv.innerHTML = '';
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         q.options.forEach(opt => {
             let b = document.createElement('button');
             b.textContent = opt;
             b.className = "option-btn";
-            b.setAttribute('draggable', 'true');
-            b.ondragstart = e => { e.dataTransfer.setData("text/plain", opt); };
+            if (!isMobile) {
+                b.setAttribute('draggable', 'true');
+                b.ondragstart = e => { e.dataTransfer.setData("text/plain", opt); };
+            }
             b.onclick = function (e) {
                 if (gap.dataset.filled === "1") return;
                 fillGap(opt);
