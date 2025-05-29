@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Модальные глаголы - Английские игры</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <link rel="stylesheet" href="modal.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -15,31 +16,27 @@
             <div>Рекорд: <span id="best-score">0</span></div>
         </div>
     </header>
-
     <div id="game-area">
         <div id="question-container">
             <span id="question-text"></span>
             <span id="gap" class="gap-area">&nbsp;</span>
-            <!-- script will insert <span id="question-end"></span> -->
         </div>
         <div id="options"></div>
-        <div style="margin:8px;font-size:16px;">
+        <div style="margin:6px;font-size:14px;">
             <span id="timer"></span>
         </div>
         <div id="result-msg"></div>
         <button id="next-btn" style="display:none;">Дальше</button>
     </div>
-
     <div id="game-over-modal" class="modal">
         <div class="modal-content">
-            <h2>Игра окончена!</h2>
+            <h2 style="font-size:18px;">Игра окончена!</h2>
             <p id="final-score"></p>
             <p id="new-record" class="hidden">Новый рекорд! 🏆</p>
-            <button id="play-again">Играть снова</button>
+            <button id="play-again" style="font-size:15px;padding:6px 12px;">Играть снова</button>
             <button class="back-button" id="gameover-back-button">В меню</button>
         </div>
     </div>
-
     <footer>
         <button id="back-to-menu" class="back-button">← Вернуться в меню</button>
     </footer>
