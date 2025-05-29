@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
 
-    
     function getInitData() {
         if (tg?.initData) return tg.initData;
         let m = window.location.search.match(/[?&]initData=([^&]*)/);
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let selectedOptionBtn = null;
-    
+
     let modalVerbsData = [
         {questionStart: "", questionEnd: "you see anything in the dark room?", correct: "can", options: ["can","may"]},
         {questionStart: "Kate ", questionEnd: "speak English.", correct: "can", options: ["can","may"]},
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
         {questionStart: "", questionEnd: "you help me, please?", correct: "can", options: ["can","may"]}
     ];
 
-    
     const questionText = document.getElementById('question-text');
     const gap = document.getElementById('gap');
     const optionsDiv = document.getElementById('options');
@@ -48,10 +46,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const gameoverBackButton = document.getElementById('gameover-back-button');
     const API = "https://threeinone.duckdns.org:8000/api/";
 
-    
     let score = 0, bestScore = 0, currentIndex = 0, shuffled = [], timeLeft = 10, timerInterval, questionEndSpan;
 
-    
     function fetchBestScore() {
         fetch(API + "get_best_score/", {
             method: "POST",
@@ -80,14 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function shuffleArray(array) {
         let arr = array.slice();
-        for (let i = arr.length-1; i > 0; i--) {
-            let j = Math.floor(Math.random() * (i+1));
+        for (let i = arr.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
     }
 
-    
     function startGame() {
         shuffled = shuffleArray(modalVerbsData);
         currentIndex = 0;
@@ -124,17 +119,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (gap.dataset.filled === "1") return;
             let val = e.dataTransfer.getData("text/plain");
             fillGap(val);
+            if (selectedOptionBtn) selectedOptionBtn.classList.remove('selected');
             selectedOptionBtn = null;
-            document.querySelectorAll('.option-btn.selected').forEach(el => el.classList.remove('selected'));
         };
-
-        document.body.addEventListener('click', function bodyTapOut(evt) {
-            if (selectedOptionBtn && !evt.target.classList.contains('option-btn') && evt.target !== gap) {
-                selectedOptionBtn.classList.remove('selected');
-                selectedOptionBtn = null;
-            }
-            setTimeout(()=>document.body.removeEventListener('click', bodyTapOut), 1);
-        });
 
         optionsDiv.innerHTML = '';
         q.options.forEach(opt => {
@@ -143,8 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
             b.className = "option-btn";
             b.setAttribute('draggable', 'true');
             b.ondragstart = e => { e.dataTransfer.setData("text/plain", opt); };
-
-            b.onclick = function(e){
+            b.onclick = function (e) {
                 if (selectedOptionBtn === b) {
                     b.classList.remove('selected');
                     selectedOptionBtn = null;
@@ -157,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
             optionsDiv.appendChild(b);
         });
 
-        gap.onclick = function() {
+        gap.onclick = function () {
             if (gap.dataset.filled === "1") return;
             if (selectedOptionBtn) {
                 fillGap(selectedOptionBtn.textContent);
@@ -171,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
         resultMsg.className = '';
         startTimer();
     }
-
 
     function fillGap(val) {
         if (gap.dataset.filled === "1") return;
@@ -189,10 +174,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 bestScore = score;
                 bestSpan.textContent = bestScore;
             }
+            resultMsg.textContent = 'Верно!';
+            resultMsg.className = "correct";
+        } else {
+            resultMsg.textContent = 'Неверно!';
+            resultMsg.className = "incorrect";
         }
-        checkAnswer(val);
+        clearInterval(timerInterval);
+        nextBtn.style.display = 'inline-block';
     }
-
 
     function startTimer() {
         timeLeft = 10;
@@ -211,31 +201,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1000);
     }
 
-    function checkAnswer(val) {
-        clearInterval(timerInterval);
-        if (val.trim().toLowerCase() === gap.dataset.expected.toLowerCase()) {
-            score++;
-            scoreSpan.textContent = score;
-            resultMsg.textContent = 'Верно!';
-            resultMsg.className = "correct";
-        } else {
-            resultMsg.textContent = 'Неверно!';
-            resultMsg.className = "incorrect";
-        }
-        nextBtn.style.display = 'inline-block';
-    }
-
     nextBtn.onclick = () => { currentIndex++; showQuestion(); };
     playAgainBtn.onclick = startGame;
 
-    
     function backToMainMenu() {
         if (score > bestScore) {
-            fetch(API+"set_best_score/", {
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({user_id, game: 'modal', score})
-            }).then(()=> {
+            fetch(API + "set_best_score/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id, game: 'modal', score })
+            }).then(() => {
                 alert("Поздравляем! Новый рекорд сохранён!");
                 window.location.href = 'index.html';
             });
@@ -247,9 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
     gameoverBackButton.onclick = backToMainMenu;
 
     function endGame() {
-        finalScoreElem.textContent = "Ваш счет: "+score;
+        finalScoreElem.textContent = "Ваш счет: " + score;
         updateBestScoreIfNeeded();
-        gameOverModal.style.display='flex';
+        gameOverModal.style.display = 'flex';
     }
 
     fetchBestScore();
