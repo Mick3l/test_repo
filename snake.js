@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         throw 'no user';
     }
 
-    const API = "http://localhost:8000/api/";
+    const API = "http://84.201.171.104:8000/api/";
     
 
     const canvas = document.getElementById('game');

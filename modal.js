@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const finalScoreElem = document.getElementById('final-score');
     const newRecordElem = document.getElementById('new-record');
     const playAgainBtn = document.getElementById('play-again');
-    const API = "http://localhost:8000/api/";
+    const API = "http://84.201.171.104:8000/api/";
 
     // ===== App state =====
     let score = 0, bestScore = 0, currentIndex = 0, shuffled = [], timeLeft = 10, timerInterval;
