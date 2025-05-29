@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
     tg.ready();
     tg.expand();
 
-    // --- Data start
     let modalVerbsData = [
         {question: "______ you see anything in the dark room?", correct: "can", options: ["can","may"]},
         {question: "Kate ______ speak English.",                correct: "can", options: ["can","may"]},
@@ -12,8 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {question: "______ you help me, please?",               correct: "can", options: ["can","may"]},
     ];
 
-    const params = new URLSearchParams(window.location.search);
-    const user_id = params.get('user_id');
+    let user_id = tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.user_id;
     if (!user_id) {
         alert("User not identified. Try launching from Telegram.");
         return;
@@ -65,7 +63,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function shuffleArray(array) {
-        // Fisher-Yates
         let arr = array.slice();
         for (let i = arr.length-1; i > 0; i--) {
             let j = Math.floor(Math.random()*(i+1));
@@ -100,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
         optionsDiv.innerHTML = '';
         nextBtn.style.display = 'none';
         resultMsg.innerHTML = '';
-        // Two drag options as buttons
         options.forEach(opt=>{
             let b = document.createElement('button');
             b.textContent = opt;
@@ -111,14 +107,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.dataTransfer.setData("text/plain", opt);
             };
             b.ontouchstart = function(e){
-                // For mobile, allow tap-to-place
                 fillGap(opt);
                 e.preventDefault();
             };
             optionsDiv.appendChild(b);
         });
 
-        // Make gap area droppable
         gap.ondragover = (e)=> { e.preventDefault(); gap.style.background = "#def"; }
         gap.ondragleave = (e)=> { gap.style.background = ""; };
         gap.ondrop = (e)=>{
@@ -133,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fillGap(val) {
-        if (gap.textContent) return; // allow only once
+        if (gap.textContent) return;
         gap.textContent = val;
         checkAnswer(val);
     }
@@ -183,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     playAgainBtn.onclick = startGame;
 
-    // --- start ---
     fetchBestScore();
     startGame();
 });

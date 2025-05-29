@@ -101,20 +101,46 @@ def get_top_players():
     return top_players
 
 
-@bot.message_handler(func=lambda message: message.text == "🏆 Рейтинг")
-def show_rating(message):
+@bot.callback_query_handler(func=lambda call: call.data == "show_rating")
+def show_rating(call):
+    greeting = 'Привет!\n\n'
+
     top_players = get_top_players()
 
     if not top_players:
-        bot.send_message(message.chat.id, "Пока никто не играл. Будь первым! 🥇")
-        return
+        rating_text = "Пока никто не играл. Будь первым! 🥇"
+        if greeting + rating_text == call.message.text:
+            rating_text = "Всё ещё никто не играл. Будь первым! 🥇"
+    else:
+        ratings = ''
+        for i, (username, score) in enumerate(top_players, 1):
+            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🎖"
+            ratings += f"{medal} {i}. {username}: {score} очков\n"
 
-    rating_text = "🏆 Топ-5 игроков:\n\n"
-    for i, (username, score) in enumerate(top_players, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🎖"
-        rating_text += f"{medal} {i}. {username}: {score} очков\n"
+        standard_text = "🏆 Топ-5 игроков:\n\n"
+        not_changed_text = "🏆 Топ-5 игроков (не изменился):\n\n"
+        still_not_changed_text = "🏆 Топ-5 игроков (всё ещё не изменился):\n\n"
 
-    bot.send_message(message.chat.id, rating_text)
+        if not_changed_text in call.message.text:
+            rating_text = not_changed_text
+        elif still_not_changed_text in call.message.text:
+            rating_text = still_not_changed_text
+        else:
+            rating_text = standard_text
+        if greeting + rating_text + ratings.rstrip() == call.message.text:
+            if rating_text == not_changed_text:
+                rating_text = still_not_changed_text + ratings
+            else:
+                rating_text = not_changed_text + ratings
+        else:
+            rating_text = standard_text + ratings
+
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=greeting + rating_text,
+        reply_markup=call.message.reply_markup
+    )
 
 
 @bot.message_handler(func=lambda message: True)
@@ -124,20 +150,23 @@ def handle_message(message):
 
     add_user(user_id, username)
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.InlineKeyboardMarkup()
 
     print(message.from_user.id)
 
-    web_app_button = types.KeyboardButton(
-        "🇬🇧 Английский",
-        web_app=types.WebAppInfo(url=f"https://mick3l.github.io/test_repo/?user_id={message.from_user.id}")
+    web_app_button = types.InlineKeyboardButton(
+        "🇬🇧 Играть",
+        web_app=types.WebAppInfo(url=f"https://mick3l.github.io/test_repo/"),
     )
 
-    rating_button = types.KeyboardButton("🏆 Рейтинг")
+    rating_button = types.InlineKeyboardButton(
+        "🏆 Рейтинг",
+        callback_data="show_rating"
+    )
 
     markup.add(web_app_button, rating_button)
 
-    bot.send_message(message.chat.id, "Привет! Выбери действие:", reply_markup=markup)
+    bot.send_message(message.chat.id, "Привет!", reply_markup=markup)
 
 
 import threading
