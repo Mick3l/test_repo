@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         throw 'no user';
     }
 
+    let selectedOptionBtn = null;
     
     let modalVerbsData = [
         {questionStart: "", questionEnd: "you see anything in the dark room?", correct: "can", options: ["can","may"]},
@@ -76,17 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
     }
-    
-    window.onbeforeunload = function(){
-        if (score > bestScore) {
-            updateBestScoreIfNeeded();
-            setTimeout(()=>{
-                alert("Поздравляем! Новый рекорд сохранён!");
-            },50);
-        }
-    };
 
-    
     function shuffleArray(array) {
         let arr = array.slice();
         for (let i = arr.length-1; i > 0; i--) {
@@ -119,14 +110,12 @@ document.addEventListener('DOMContentLoaded', function () {
         gap.dataset.expected = q.correct;
         gap.dataset.filled = "0";
 
-        
         if (questionEndSpan) questionEndSpan.remove();
         questionEndSpan = document.createElement('span');
         questionEndSpan.id = "question-end";
         questionEndSpan.textContent = q.questionEnd;
         gap.parentNode.appendChild(questionEndSpan);
 
-        
         gap.ondragover = e => { e.preventDefault(); gap.classList.add("dragover"); };
         gap.ondragleave = e => { gap.classList.remove("dragover"); };
         gap.ondrop = e => {
@@ -135,38 +124,47 @@ document.addEventListener('DOMContentLoaded', function () {
             if (gap.dataset.filled === "1") return;
             let val = e.dataTransfer.getData("text/plain");
             fillGap(val);
+            selectedOptionBtn = null;
+            document.querySelectorAll('.option-btn.selected').forEach(el => el.classList.remove('selected'));
         };
 
-        
-        gap.onclick = function() {
-            if (gap.dataset.filled === "1") {
-                
-                
-                
+        document.body.addEventListener('click', function bodyTapOut(evt) {
+            if (selectedOptionBtn && !evt.target.classList.contains('option-btn') && evt.target !== gap) {
+                selectedOptionBtn.classList.remove('selected');
+                selectedOptionBtn = null;
             }
-        };
+            setTimeout(()=>document.body.removeEventListener('click', bodyTapOut), 1);
+        });
 
-        
         optionsDiv.innerHTML = '';
         q.options.forEach(opt => {
             let b = document.createElement('button');
             b.textContent = opt;
             b.className = "option-btn";
             b.setAttribute('draggable', 'true');
-            
-            b.ondragstart = e => {
-                e.dataTransfer.setData("text/plain", opt);
+            b.ondragstart = e => { e.dataTransfer.setData("text/plain", opt); };
+
+            b.onclick = function(e){
+                if (selectedOptionBtn === b) {
+                    b.classList.remove('selected');
+                    selectedOptionBtn = null;
+                } else {
+                    document.querySelectorAll('.option-btn.selected').forEach(el => el.classList.remove('selected'));
+                    b.classList.add('selected');
+                    selectedOptionBtn = b;
+                }
             };
-            
-            b.addEventListener('touchstart', function(e){
-                
-                e.preventDefault(); e.stopPropagation();
-                if (gap.dataset.filled === "0") fillGap(opt);
-            }, {passive: false});
-            
-            b.onclick = () => { if (gap.dataset.filled==="0") fillGap(opt); };
             optionsDiv.appendChild(b);
         });
+
+        gap.onclick = function() {
+            if (gap.dataset.filled === "1") return;
+            if (selectedOptionBtn) {
+                fillGap(selectedOptionBtn.textContent);
+                selectedOptionBtn.classList.remove('selected');
+                selectedOptionBtn = null;
+            }
+        };
 
         nextBtn.style.display = "none";
         resultMsg.textContent = '';
@@ -174,13 +172,27 @@ document.addEventListener('DOMContentLoaded', function () {
         startTimer();
     }
 
+
     function fillGap(val) {
         if (gap.dataset.filled === "1") return;
         gap.textContent = val;
         gap.classList.add("filled");
         gap.dataset.filled = "1";
+        if (val.trim().toLowerCase() === gap.dataset.expected.toLowerCase()) {
+            score++;
+            scoreSpan.textContent = score;
+            if (score > bestScore) {
+                fetch(API + "set_best_score/", {
+                    method: "POST", headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id, game: "modal", score })
+                });
+                bestScore = score;
+                bestSpan.textContent = bestScore;
+            }
+        }
         checkAnswer(val);
     }
+
 
     function startTimer() {
         timeLeft = 10;

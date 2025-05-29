@@ -262,10 +262,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 food.splice(i, 1);
                 score += 1;
                 scoreElement.textContent = score;
+
+                if (score > bestScore) {
+                    fetch(API + "set_best_score/", {
+                        method: "POST",
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id, game: 'snake', score })
+                    });
+                }
+
                 foundFood = true;
-
-                
-
                 showTask();
                 break;
             }
@@ -342,8 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInterval(gameInterval);
 
         finalScoreElement.textContent = `Ваш счет: ${score}`;
-
-        
 
         if (updateBestScore()) {
             newRecordElement.classList.remove('hidden');
